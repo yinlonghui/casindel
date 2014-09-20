@@ -1,0 +1,1 @@
+./filter -1  1  -2  2  -3 42  CPCG0100.HCC-set4-yan-LFs1.total /leofs/bioreseq/spling/Challenge/Real_data/map/MEM/CPCG0100/Normal/read.sort.filt.bam /leofs/bioreseq/spling/Challenge/Real_data/map/MEM/CPCG0100/Tumor/read.sort.filt.bam   out.pup

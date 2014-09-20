@@ -10,6 +10,7 @@
 typedef struct {
 	char *fn[4] ;
 	int  len ;
+	int  dist ;
 } opt_t ;
 
 opt_t *parse_main( int argc  , char *argv[]);

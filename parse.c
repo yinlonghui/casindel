@@ -8,6 +8,7 @@ static int usage()
 {
 	fprintf(stderr,"casindel [option]  in.normal.bam   in.tumor.bam  out.feature\n");
 	fprintf(stderr,"         -l <INT>   head/tail length");
+	fprintf(stderr,"         -d <INT>   distant");
 	return 0 ;
 }
 
@@ -17,10 +18,12 @@ opt_t *parse_main( int argc  , char *argv[])
 {
 	opt_t  *p =  calloc(1,sizeof(opt_t));
 	p->len = 10 ;
+	p->dist = 5 ;
 	int c  ; 
-	while( (c = getopt(argc ,argv ,"l:")) >= 0 ){
+	while( (c = getopt(argc ,argv ,"l:d:")) >= 0 ){
 		switch(c){
 			case 'l': p->len = atoi(optarg);  break;
+			case 'd': p->dist = atoi(optarg); break;
 			default:  break; 
 		}
 

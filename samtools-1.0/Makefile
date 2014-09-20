@@ -23,7 +23,7 @@
 
 CC       = gcc
 CPPFLAGS = $(DFLAGS) $(INCLUDES)
-CFLAGS   = -g -Wall 
+CFLAGS   = -g -Wall  -O2
 LDFLAGS  =
 LDLIBS   =
 DFLAGS=     -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE -D_CURSES_LIB=1
@@ -121,7 +121,7 @@ libbam.a:$(LOBJS)
 	$(AR) -csru $@ $(LOBJS)
 
 samtools: $(AOBJS) libbam.a $(HTSLIB)
-	$(CC) -pthread $(LDFLAGS) -o $@ $(AOBJS) libbam.a $(HTSLIB) $(LDLIBS) $(LIBCURSES) -lm -lz
+	$(CC) -pthread $(LDFLAGS) -o $@ $(AOBJS) libbam.a $(HTSLIB) $(LDLIBS) $(LIBCURSES) -lm -lz 
 
 bam_h = bam.h $(htslib_bgzf_h) $(htslib_sam_h)
 bam2bcf_h = bam2bcf.h $(htslib_vcf_h) errmod.h

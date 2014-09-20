@@ -1,1 +1,1 @@
-valgrind  --tool=memcheck --leak-check=yes  ./casindel 
+valgrind  --tool=memcheck --leak-check=yes  ./casindel   ~/workspace/data/set3/synthetic.challenge.set3.normal.chr22.bam     ~/workspace/data/set3/synthetic.challenge.set3.tumor.chr22.bam    feature   /home/fpga/workspace/data/set3/Homo_sapiens_assembly19_fromBroad.fa > test.cigar

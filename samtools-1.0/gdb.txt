@@ -1,0 +1,175 @@
+Reading symbols from /home/fpga/workspace/prototype-development/casindel/samtools-1.0/samtools...done.
+Breakpoint 1 at 0x40a118: file sam_view.c, line 237.
+Starting program: /home/fpga/workspace/prototype-development/casindel/samtools-1.0/samtools view ~/workspace/data/out.mut.testregion_bwamem2.bam  22:3143432:3445566
+[Thread debugging using libthread_db enabled]
+Using host libthread_db library "/lib/x86_64-linux-gnu/libthread_db.so.1".
+
+Breakpoint 1, main_samview (argc=3, argv=0x7fffffffde50) at sam_view.c:237
+warning: Source file is more recent than executable.
+237	{
+238	    int c, is_header = 0, is_header_only = 0, ret = 0, compress_level = -1, is_count = 0;
+239	    int is_long_help = 0, n_threads = 0;
+240	    int64_t count = 0;
+241	    samFile *in = 0, *out = 0, *un_out=0;
+242	    bam_hdr_t *header = NULL;
+243	    char out_mode[5], *out_format = "", *fn_out = 0, *fn_list = 0, *fn_ref = 0, *q, *fn_un_out = 0;
+245	    samview_settings_t settings = {
+261	    strcpy(out_mode, "w");
+262	    while ((c = getopt(argc, argv, "SbBcCt:h1Ho:q:f:F:ul:r:?T:R:L:s:Q:@:m:x:U:")) >= 0) {
+332	    if (compress_level >= 0) out_format = "b";
+333	    if (is_header_only) is_header = 1;
+334	    strcat(out_mode, out_format);
+335	    if (compress_level >= 0) {
+340	    if (argc == optind) return usage(is_long_help); // potential memory leak...
+343	    if (fn_list == 0 && fn_ref) fn_list = samfaipath(fn_ref);
+$1 = 0x0
+345	    if ((in = sam_open(argv[optind], "r")) == 0) {
+350	    if (fn_list) hts_set_fai_filename(in, fn_list);
+$2 = 0x0
+351	    if ((header = sam_hdr_read(in)) == 0) {
+356	    if (settings.rghash) { // FIXME: I do not know what "bam_header_t::n_text" is for...
+$3 = (bam_hdr_t *) 0x6ea1d0
+364	    if (!is_count) {
+365	        if ((out = sam_open(fn_out? fn_out : "-", out_mode)) == 0) {
+370	        if (fn_list) hts_set_fai_filename(out, fn_list);
+371	        if (*out_format || is_header) sam_hdr_write(out, header);
+372	        if (fn_un_out) {
+381	    if (n_threads > 1) { hts_set_threads(out, n_threads); }
+382	    if (is_header_only) goto view_end; // no need to print alignments
+384	    if (argc == optind + 1) { // convert/print the entire file
+403	        hts_idx_t *idx = sam_index_load(in, argv[optind]); // load index
+404	        if (idx == 0) { // index is unavailable
+$4 = (hts_idx_t *) 0x0
+405	            fprintf(stderr, "[main_samview] random alignment retrieval only works for indexed BAM or CRAM files.\n");
+406	            ret = 1;
+A debugging session is active.
+
+	Inferior 1 [process 2994] will be killed.
+
+Quit anyway? (y or n) Reading symbols from /home/fpga/workspace/prototype-development/casindel/samtools-1.0/samtools...done.
+Breakpoint 1 at 0x40a118: file sam_view.c, line 237.
+Starting program: /home/fpga/workspace/prototype-development/casindel/samtools-1.0/samtools view ~/workspace/data/out.mut.testregion_bwamem2.sort.bam  22:33597573-33597673
+[Thread debugging using libthread_db enabled]
+Using host libthread_db library "/lib/x86_64-linux-gnu/libthread_db.so.1".
+
+Breakpoint 1, main_samview (argc=3, argv=0x7fffffffde50) at sam_view.c:237
+warning: Source file is more recent than executable.
+237	{
+238	    int c, is_header = 0, is_header_only = 0, ret = 0, compress_level = -1, is_count = 0;
+239	    int is_long_help = 0, n_threads = 0;
+240	    int64_t count = 0;
+241	    samFile *in = 0, *out = 0, *un_out=0;
+242	    bam_hdr_t *header = NULL;
+243	    char out_mode[5], *out_format = "", *fn_out = 0, *fn_list = 0, *fn_ref = 0, *q, *fn_un_out = 0;
+245	    samview_settings_t settings = {
+261	    strcpy(out_mode, "w");
+262	    while ((c = getopt(argc, argv, "SbBcCt:h1Ho:q:f:F:ul:r:?T:R:L:s:Q:@:m:x:U:")) >= 0) {
+332	    if (compress_level >= 0) out_format = "b";
+333	    if (is_header_only) is_header = 1;
+334	    strcat(out_mode, out_format);
+335	    if (compress_level >= 0) {
+340	    if (argc == optind) return usage(is_long_help); // potential memory leak...
+343	    if (fn_list == 0 && fn_ref) fn_list = samfaipath(fn_ref);
+345	    if ((in = sam_open(argv[optind], "r")) == 0) {
+350	    if (fn_list) hts_set_fai_filename(in, fn_list);
+351	    if ((header = sam_hdr_read(in)) == 0) {
+356	    if (settings.rghash) { // FIXME: I do not know what "bam_header_t::n_text" is for...
+364	    if (!is_count) {
+365	        if ((out = sam_open(fn_out? fn_out : "-", out_mode)) == 0) {
+370	        if (fn_list) hts_set_fai_filename(out, fn_list);
+371	        if (*out_format || is_header) sam_hdr_write(out, header);
+372	        if (fn_un_out) {
+381	    if (n_threads > 1) { hts_set_threads(out, n_threads); }
+382	    if (is_header_only) goto view_end; // no need to print alignments
+384	    if (argc == optind + 1) { // convert/print the entire file
+403	        hts_idx_t *idx = sam_index_load(in, argv[optind]); // load index
+404	        if (idx == 0) { // index is unavailable
+$1 = (hts_idx_t *) 0x6ec190
+409	        b = bam_init1();
+410	        for (i = optind + 1; i < argc; ++i) {
+412	            hts_itr_t *iter = sam_itr_querys(idx, header, argv[i]); // parse a region in the format like `chr2:100-200'
+413	            if (iter == NULL) { // reference name is not found
+$2 = (hts_itr_t *) 0x6ebf00
+A debugging session is active.
+
+	Inferior 1 [process 3053] will be killed.
+
+Quit anyway? (y or n) Not confirmed.
+A syntax error in expression, near `'.
+$3 = 0x7fffffffe1f0 "/home/fpga/workspace/data/out.mut.testregion_bwamem2.sort.bam"
+A debugging session is active.
+
+	Inferior 1 [process 3053] will be killed.
+
+Quit anyway? (y or n) Reading symbols from /home/fpga/workspace/prototype-development/casindel/samtools-1.0/samtools...done.
+Breakpoint 1 at 0x40ab48: file sam_view.c, line 412.
+Starting program: /home/fpga/workspace/prototype-development/casindel/samtools-1.0/samtools view ~/workspace/data/testregion_bwamem.bam  22:33597573-33597673
+[Thread debugging using libthread_db enabled]
+Using host libthread_db library "/lib/x86_64-linux-gnu/libthread_db.so.1".
+
+Breakpoint 1, main_samview (argc=3, argv=0x7fffffffde50) at sam_view.c:412
+warning: Source file is more recent than executable.
+412	            hts_itr_t *iter = sam_itr_querys(idx, header, argv[i]); // parse a region in the format like `chr2:100-200'
+$1 = 0x7fffffffe22e "22:33597573-33597673"
+413	            if (iter == NULL) { // reference name is not found
+$2 = (hts_itr_t *) 0x6ebfc0
+$3 = (bam_hdr_t *) 0x6ea1c0
+$4 = (char **) 0x7fffffffde50
+$5 = 0x7fffffffe1f9 "view"
+$6 = 0x7fffffffe1fe "/home/fpga/workspace/data/testregion_bwamem.bam"
+A debugging session is active.
+
+	Inferior 1 [process 3146] will be killed.
+
+Quit anyway? (y or n) Reading symbols from /home/fpga/workspace/prototype-development/casindel/samtools-1.0/samtools...done.
+Starting program: /home/fpga/workspace/prototype-development/casindel/samtools-1.0/samtools view ~/workspace/data/testregion_bwamem.bam  22:33597573-33597673
+[Thread debugging using libthread_db enabled]
+Using host libthread_db library "/lib/x86_64-linux-gnu/libthread_db.so.1".
+[Inferior 1 (process 3284) exited normally]
+Breakpoint 1 at 0x40a118: file sam_view.c, line 237.
+Starting program: /home/fpga/workspace/prototype-development/casindel/samtools-1.0/samtools view ~/workspace/data/testregion_bwamem.bam  22:33597573-33597673
+[Thread debugging using libthread_db enabled]
+Using host libthread_db library "/lib/x86_64-linux-gnu/libthread_db.so.1".
+
+Breakpoint 1, main_samview (argc=3, argv=0x7fffffffde50) at sam_view.c:237
+warning: Source file is more recent than executable.
+237	{
+238	    int c, is_header = 0, is_header_only = 0, ret = 0, compress_level = -1, is_count = 0;
+239	    int is_long_help = 0, n_threads = 0;
+240	    int64_t count = 0;
+241	    samFile *in = 0, *out = 0, *un_out=0;
+242	    bam_hdr_t *header = NULL;
+243	    char out_mode[5], *out_format = "", *fn_out = 0, *fn_list = 0, *fn_ref = 0, *q, *fn_un_out = 0;
+245	    samview_settings_t settings = {
+261	    strcpy(out_mode, "w");
+262	    while ((c = getopt(argc, argv, "SbBcCt:h1Ho:q:f:F:ul:r:?T:R:L:s:Q:@:m:x:U:")) >= 0) {
+332	    if (compress_level >= 0) out_format = "b";
+333	    if (is_header_only) is_header = 1;
+334	    strcat(out_mode, out_format);
+335	    if (compress_level >= 0) {
+340	    if (argc == optind) return usage(is_long_help); // potential memory leak...
+343	    if (fn_list == 0 && fn_ref) fn_list = samfaipath(fn_ref);
+345	    if ((in = sam_open(argv[optind], "r")) == 0) {
+350	    if (fn_list) hts_set_fai_filename(in, fn_list);
+351	    if ((header = sam_hdr_read(in)) == 0) {
+356	    if (settings.rghash) { // FIXME: I do not know what "bam_header_t::n_text" is for...
+364	    if (!is_count) {
+365	        if ((out = sam_open(fn_out? fn_out : "-", out_mode)) == 0) {
+370	        if (fn_list) hts_set_fai_filename(out, fn_list);
+371	        if (*out_format || is_header) sam_hdr_write(out, header);
+372	        if (fn_un_out) {
+381	    if (n_threads > 1) { hts_set_threads(out, n_threads); }
+382	    if (is_header_only) goto view_end; // no need to print alignments
+384	    if (argc == optind + 1) { // convert/print the entire file
+403	        hts_idx_t *idx = sam_index_load(in, argv[optind]); // load index
+404	        if (idx == 0) { // index is unavailable
+409	        b = bam_init1();
+410	        for (i = optind + 1; i < argc; ++i) {
+412	            hts_itr_t *iter = sam_itr_querys(idx, header, argv[i]); // parse a region in the format like `chr2:100-200'
+413	            if (iter == NULL) { // reference name is not found
+418	            while ((result = sam_itr_next(in, iter, b)) >= 0) {
+A debugging session is active.
+
+	Inferior 1 [process 3287] will be killed.
+
+Quit anyway? (y or n) 
