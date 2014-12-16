@@ -38,6 +38,13 @@ opt_t	*init_opt()
 
 int	is_support( bam1_t *b[2] , char c ,FILE *out , int pos , int *normal_support) ;
 
+
+
+typedef struct{
+	bam1_t **b ;
+	int m ;
+} bam_v ;
+
 int	main(int argc ,  char *argv[])
 {
 	opt_t *p =  init_opt();
@@ -50,10 +57,10 @@ int	main(int argc ,  char *argv[])
 
 	while(( parse_c = getopt(argc,argv,"1:2:3:4:"))>= 0){
 		switch(parse_c){
-			case	1:  p->chr_col = atoi(optarg); break;
-			case	2:  p->pos_col = atoi(optarg); break;
-			case	3:  p->no_ref_col = atoi(optarg); break ;
-			case	4:  p->n_col  =  atoi(optarg); break ;
+			case	'1':  p->chr_col = atoi(optarg); break;
+			case	'2':  p->pos_col = atoi(optarg); break;
+			case	'3':  p->no_ref_col = atoi(optarg); break ;
+			case	'4':  p->n_col  =  atoi(optarg); break ;
 		}
 	}
 
@@ -75,10 +82,17 @@ int	main(int argc ,  char *argv[])
 		fprintf(stderr,"can't open %s\n",argv[optind+3]);
 		return -1 ;
 	}
+	bam_v	normal;
+	normal.m = 1024 ;
+	normal.b = malloc(sizeof(bam1_t *)*normal.m);
+
+	int k ;
+	for(  k = 0 ; k < normal.m ; k++){
+		normal.b[k] = bam_init1();
+	}
 
 /* open normal and tumor bam */
 
-	int k ;
 	for( k = 0 ; k < 2 ; k++){
 		fp[k] =  sam_open(argv[optind + k+ 1]);
 		if(!fp[k]){
@@ -104,7 +118,7 @@ int	main(int argc ,  char *argv[])
 
 	while(!feof(in_pup)){
 		char	buffer[1024] ,pup_c  ;
-		int	i , pup_tid , pup_pos ,sp  ,support , nor_sp , nor_support ,pre_bam_pos , result ,rc  ;
+		int	i , pup_tid , pup_pos ,sp  ,support , nor_sp , nor_support ,pre_bam_pos , result  ;
 		support = sp = nor_sp = nor_support = 0 ;
 
 
@@ -115,7 +129,6 @@ int	main(int argc ,  char *argv[])
 			if(i+1 == p->pos_col)
 				pup_pos =  atoi(buffer);
 			if(i+1 == p->no_ref_col){
-				fprintf(out_pup,"%s\t",buffer);
 				pup_c = buffer[0];
 			}
 			fprintf(out_pup,"%s\t",buffer);
@@ -125,6 +138,20 @@ int	main(int argc ,  char *argv[])
 		pup_pos--;
 		iter[0] = sam_itr_queryi( idx[0], pup_tid, pup_pos, pup_pos+1 );
 		iter[1] = sam_itr_queryi( idx[1], pup_tid, pup_pos, pup_pos+1 );
+		k = 0 ;
+		do {
+
+			if( k ==  normal.m )	{
+				normal.m =  normal.m << 1 ;
+				normal.b = realloc(normal.b , sizeof(bam1_t*)*normal.m);
+				for( i = k ; i < normal.m ; i++)
+					normal.b[i] = bam_init1();
+			}
+//			fprintf(stderr,"%d\n",k);
+			
+			result = sam_itr_next( fp[0] , iter[0] ,normal.b[k]) ;
+			k++ ;
+		}while(result >= 0);
 
 		pre_bam_pos = b[0]->core.pos = b[1]->core.pos = -1 ;
 	
@@ -132,29 +159,37 @@ int	main(int argc ,  char *argv[])
 			fprintf(stderr,"can't open find index tid:%d,pos:%d\n",pup_tid,pup_pos);
 			return -1 ;
 		}
+		int offset = 0 ;
 		while((result = sam_itr_next(fp[1],iter[1],b[1]))>=0){
-			int  n , ns ;
-			n = ns = 0;
+			int  ns , tmp_n , tmp_ns;
+			tmp_n = ns = tmp_ns= 0;
+			for( k = offset ;  k < normal.m ; k++)
+				if(normal.b[k]->core.pos == b[0]->core.pos) break ;
+			offset =  k - 1 ;
+			
 		
-			if(b[0]->core.pos < b[1]->core.pos )
-				rc = sam_itr_next(fp[0],iter[0],b[0]);
 			
 //			fprintf(out_pup,"%s\t",bam_get_qname(b[1]));
+//
+			if( k == normal.m )  b[0]->core.pos = -1 ;
+			else *b[0]  =  *normal.b[k];
 
-			if( b[1]->core.pos != pre_bam_pos ){ 
-//  parse MD , include c
-				n = is_support(b,pup_c,out_pup,pup_pos,&ns);
-				support += n ; 
-				sp  += n ; 
-				nor_support += ns ;
-				nor_sp  += ns ;
-			}else{
-				n = is_support(b,pup_c,out_pup,pup_pos,&ns) ;
-				support += n ; 
-				nor_support  += ns ;
+			do {
+				tmp_n |= is_support(b,pup_c,out_pup,pup_pos,&ns);
+				tmp_ns |= ns ;
+				k++ ;
+				if(k >= normal.m) break ;
+		
+			}while(normal.b[k]->core.pos > b[1]->core.pos);
+
+			if(pre_bam_pos != b[1]->core.pos ){
+				nor_sp +=  tmp_ns;
+				sp +=  tmp_n ;
 			}
+			support += tmp_n ;
+			nor_support += tmp_ns;
 
-			if(n) pre_bam_pos  =  b[1]->core.pos;
+			if(tmp_n) pre_bam_pos  =  b[1]->core.pos;
 #if 0
 			fprintf(out_pup,"pup_pos: %d \t",pup_pos);
 			fprintf(out_pup,"tid:%d pos: %d \t",b[1]->core.tid , b[1]->core.pos );
@@ -165,6 +200,9 @@ int	main(int argc ,  char *argv[])
 		hts_itr_destroy(iter[0]);
 		hts_itr_destroy(iter[1]);
 	}
+	for( k = 0 ; k < normal.m ;  k++)
+		free(normal.b[k]);
+	free(normal.b);
 	for( k = 0 ; k < 2; k++){
 		bam_destroy1(b[k]);
 		sam_close(fp[k]);
@@ -196,6 +234,12 @@ int	is_support( bam1_t *b[2] , char c ,FILE *out ,int pos , int *normal_support)
 	tumor.m = 64 ;
 	tumor.n = 0 ;
 	tumor.coor = malloc(tumor.m*sizeof(int));
+
+	uint32_t  *cigar =  bam_get_cigar(b[1]);
+	for( k = 0 ; k < b[1]->core.n_cigar ; k++)
+		if(bam_cigar_op(cigar[k]) == BAM_CINS || bam_cigar_op(cigar[k]) == BAM_CHARD_CLIP || bam_cigar_op(cigar[k]) == BAM_CSOFT_CLIP){
+			return 0 ;
+		}
 	
 
 //
@@ -209,6 +253,8 @@ int	is_support( bam1_t *b[2] , char c ,FILE *out ,int pos , int *normal_support)
 	k++;
 
 	//fprintf(out,"MD:");
+	
+
 
 	// parse MD ..
 	for(  ; k < bam_get_l_aux(b[1]) ; k++){
@@ -228,6 +274,7 @@ int	is_support( bam1_t *b[2] , char c ,FILE *out ,int pos , int *normal_support)
 				tumor.coor =  realloc(tumor.coor,sizeof(int));
 			}
 			tumor.coor[tumor.n] = count ;
+			count++;
 			tumor.n++;
 			MD_num = 0;
 		}else if(isalnum(ch)) {
@@ -236,11 +283,7 @@ int	is_support( bam1_t *b[2] , char c ,FILE *out ,int pos , int *normal_support)
 			free(tumor.coor); 
 			return 0 ;
 		}
-		
 	}
-	//fprintf(out,"\t");
-	//fprintf(out,"%c\t",c);
-	//fprintf(out,"SNP:%d\t",is_SNP);
 
 	if( (is_SNP && tumor.n ==0) || !is_SNP ){
 		free(tumor.coor);
@@ -268,7 +311,8 @@ int	is_support( bam1_t *b[2] , char c ,FILE *out ,int pos , int *normal_support)
 					free(tumor.coor); 
 					return 0 ;
 				}
-				count = 0 ;
+				count++ ;
+				MD_num = 0 ;
 			}else if(isalnum(ch)) {
 				MD_num = MD_num*10 + ch - '0';
 			}else if(ch == '^' ){

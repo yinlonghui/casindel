@@ -315,18 +315,22 @@ cov_t   bam2cov( bam1_t *b ,int n_cigar , int HTlen , faidx_t *fai , bam_hdr_t *
 	cov_t   tmp ;
 	int  i , l_qseq , pos , y_pos ,t_pos ;
 	uint32_t *cigar = bam_get_cigar(b);
+	int  n_indel ;
 
-	l_qseq = pos = y_pos = t_pos =  0 ;
+	l_qseq = pos = y_pos = t_pos = n_indel = 0 ;
+
 
 	for( i = 0 ; i < n_cigar ; i++){
-		if(bam_cigar_op(cigar[i])&(BAM_CINS|BAM_CSOFT_CLIP |BAM_CHARD_CLIP) || bam_cigar_op(cigar[i]) == BAM_CMATCH )  l_qseq +=  bam_cigar_oplen(cigar[i]) ;
+		if(bam_cigar_op(cigar[i])&(BAM_CINS|BAM_CSOFT_CLIP) || bam_cigar_op(cigar[i]) == BAM_CMATCH )  l_qseq +=  bam_cigar_oplen(cigar[i]) ;
 		if(bam_cigar_op(cigar[i])&(BAM_CDEL) || bam_cigar_op(cigar[i]) == BAM_CMATCH ) pos +=  bam_cigar_oplen(cigar[i]) ;
-		if(bam_cigar_op(cigar[i])&(BAM_CINS|BAM_CSOFT_CLIP |BAM_CHARD_CLIP) || bam_cigar_op(cigar[i]) == BAM_CMATCH )  y_pos +=  bam_cigar_oplen(cigar[i]) ;
+		if(bam_cigar_op(cigar[i])&(BAM_CINS|BAM_CSOFT_CLIP) || bam_cigar_op(cigar[i]) == BAM_CMATCH )  y_pos +=  bam_cigar_oplen(cigar[i]) ;
+		if(bam_cigar_op(cigar[i])&(BAM_CDEL||BAM_CINS))  n_indel +=  bam_cigar_oplen(cigar[i]) ;
 	}
 	t_pos = pos ;
 	for(  ; i <  b->core.n_cigar  ; i++ ){
-		if(bam_cigar_op(cigar[i])&(BAM_CINS|BAM_CSOFT_CLIP |BAM_CHARD_CLIP) || bam_cigar_op(cigar[i]) == BAM_CMATCH )  l_qseq +=  bam_cigar_oplen(cigar[i]) ;
+		if(bam_cigar_op(cigar[i])&(BAM_CINS|BAM_CSOFT_CLIP ) || bam_cigar_op(cigar[i]) == BAM_CMATCH )  l_qseq +=  bam_cigar_oplen(cigar[i]) ;
 		if(bam_cigar_op(cigar[i])&(BAM_CDEL) || bam_cigar_op(cigar[i]) == BAM_CMATCH ) t_pos +=  bam_cigar_oplen(cigar[i]) ;
+		if(bam_cigar_op(cigar[i])&(BAM_CDEL||BAM_CINS))  n_indel +=  bam_cigar_oplen(cigar[i]) ;
 	}
 	
 	tmp.map_q  =  b->core.qual ;
@@ -356,7 +360,7 @@ cov_t   bam2cov( bam1_t *b ,int n_cigar , int HTlen , faidx_t *fai , bam_hdr_t *
 			j++;
 		}
 	}
-	tmp.n_mis = bam_get_aux(b)[i+1];
+	tmp.n_mis = bam_get_aux(b)[i+1] - n_indel;
 
 	if(n_cigar == 0){
 		tmp.len = l_qseq ;
@@ -471,13 +475,7 @@ int search_out_D(link_list_D *list , cov_t em ,  cov_info *p )
 
 struct   link_node *search_node_ ( struct link_node *node , cov_t em , int dist)
 {
-	struct link_node *n = node , *rt = NULL ;
-	int	min =  dist ;
-	while(n){
-		if(em.tid == n->p.t[0].tid  && abs(em.indel_pos- n->p.t[0].indel_pos) < min){
-			rt =  n  ;
-			min  = abs(em.indel_pos- n->p.t[0].indel_pos) ;
-		}
+	struct link_node *n = node , *rt = NULL ; int	min =  dist ; while(n){ if(em.tid == n->p.t[0].tid  && abs(em.indel_pos- n->p.t[0].indel_pos) < min){ rt =  n  ; min  = abs(em.indel_pos- n->p.t[0].indel_pos) ; }
 		if(em.tid < node->p.t[0].tid || em.indel_pos + min < node->p.t[0].indel_pos)  return rt ;
 		n = n->next ;
 	}
@@ -495,7 +493,7 @@ struct   link_node *search_node(link_list  *list , cov_t em , int dist )
 	return  NULL;
 }
 
-void out_data_link_D( link_list_D *list , cov_t em , int sel)
+void out_data_link_D( link_list_D *list , cov_t em , int sel) 
 {
 	struct link_node_D  *node  = list->head ;
 	while(node){

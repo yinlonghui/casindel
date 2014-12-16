@@ -1,0 +1,2 @@
+./readsPairCheck  its.ins.all.inf /leofs/bioreseq/spling/Challenge/Real_data/map/MEM/CPCG0100/Tumor/read.sort.bam   /leofs/bioreseq/spling/Challenge/Real_data/map/MEM/CPCG0100/Normal/read.sort.bam  2out.inf 
+#valgrind  --tool=memcheck --leak-check=full --show-reachable=yes ./readsPairCheck  its.ins.all.inf /leofs/bioreseq/spling/Challenge/Real_data/map/MEM/CPCG0100/Tumor/read.sort.bam   /leofs/bioreseq/spling/Challenge/Real_data/map/MEM/CPCG0100/Normal/read.sort.bam  2out.inf 

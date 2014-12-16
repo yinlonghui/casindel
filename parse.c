@@ -6,9 +6,10 @@
 
 static int usage()
 {
-	fprintf(stderr,"casindel [option]  in.normal.bam   in.tumor.bam  out.feature\n");
-	fprintf(stderr,"         -l <INT>   head/tail length");
-	fprintf(stderr,"         -d <INT>   distant");
+	fprintf(stderr,"casindel [option]  in.normal.bam   in.tumor.bam  XX reference \n");
+	fprintf(stderr,"         -l <INT>   head/tail length\n");
+	fprintf(stderr,"         -d <INT>   distant\n");
+	fprintf(stderr,"stdout > feature ..\n");
 	return 0 ;
 }
 

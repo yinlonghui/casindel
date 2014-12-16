@@ -1,0 +1,1 @@
+./distHTfilter -1  1  -2  2  -3 42   /leofs/bioreseq/spling/Challenge/Cloud_data/cloud/data/set4/answer/set4.total.SNV.answer  /leofs/bioreseq/spling/Challenge/Synthetic_data/set4/d7eca334-7541-45e3-ab9a-00aaa273fa65/synthetic.challenge.set4.tumour.bam   out.pup
